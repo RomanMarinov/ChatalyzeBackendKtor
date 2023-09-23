@@ -13,29 +13,35 @@ object Users : Table("users") {
     private val email = Users.varchar("email", 25)
 
     fun insert(userDTO: UserDTO) {
-        transaction {
-            Users.insert {
-                it[login] = userDTO.login
-                it[password] = userDTO.password
-                it[username] = userDTO.username
-                it[email] = userDTO.email ?: ""
+        try {
+            transaction {
+                Users.insert {
+                    it[login] = userDTO.login
+                    it[password] = userDTO.password
+                    it[username] = userDTO.username
+                    it[email] = userDTO.email ?: ""
+                }
+            }
+        } catch (e: Exception) {
+            println("try catch 3 e=" + e)
+        }
+    }
+
+    fun fetch(login: String): UserDTO? {
+        return transaction {
+            try {
+                val userModel = Users.select { Users.login.eq(login) }.single()
+                UserDTO(
+                    login = userModel[Users.login],
+                    password = userModel[password],
+                    username = userModel[username],
+                    email = userModel[email]
+                )
+            } catch (e: Exception) {
+                println("try catch 4 e=" + e)
+                null
             }
         }
     }
-
-    fun fetch(login: String) : UserDTO? {
-        return try {
-            val userModel = Users.select { Users.login.eq(login) }.single()
-            UserDTO(
-                login = userModel[Users.login],
-                password = userModel[password],
-                username = userModel[username],
-                email = userModel[email]
-            )
-        } catch (e: Exception) {
-            null
-        }
-    }
-
 
 }
