@@ -6,6 +6,7 @@ import io.ktor.server.netty.*
 import org.jetbrains.exposed.sql.Database
 import ru.marinovdev.features.login.configureLoginRouting
 import ru.marinovdev.features.register.configureRegisterRouting
+import ru.marinovdev.features.send_email.configureSenderEmailRouting
 import ru.marinovdev.plugins.configureRouting
 import ru.marinovdev.plugins.configureSerialization
 
@@ -44,6 +45,7 @@ fun Application.module() {
     configureLoginRouting()
     configureRegisterRouting()
     configureSerialization()
+    configureSenderEmailRouting()
 }
 
 
