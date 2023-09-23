@@ -68,7 +68,7 @@ class RegisterController(private val call: ApplicationCall) {
                 call.respond(RegisterResponseRemote(token = token))
             }
         } catch (e:Exception) {
-            println("try catch 1 e=" + e)
+            println("try catch 1 RegisterController e=" + e)
         }
 
     }
