@@ -6,8 +6,8 @@ val exposed_version: String by project
 
 plugins {
     kotlin("jvm") version "1.9.0"
-    id("io.ktor.plugin") version "2.3.3"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.0"
+    id("io.ktor.plugin") version "2.3.3"
 }
 
 group = "ru.marinovdev"
@@ -28,6 +28,7 @@ dependencies {
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
     implementation("io.ktor:ktor-server-cio-jvm")
+    implementation("io.ktor:ktor-server-netty:$ktor_version")
     // преобразовывать объекты в формат JSON и обратно
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
 
@@ -40,4 +41,8 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logback_version")
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+
+    // sending email
+    implementation("javax.mail:javax.mail-api:1.6.2")
+    implementation("com.sun.mail:javax.mail:1.6.2")
 }

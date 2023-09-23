@@ -1,1 +1,1 @@
-rootProject.name = "ru.marinovdev.hatalyze-backend"
+rootProject.name = "ru.marinovdev"
