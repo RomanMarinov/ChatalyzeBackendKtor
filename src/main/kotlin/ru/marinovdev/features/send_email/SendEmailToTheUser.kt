@@ -6,13 +6,15 @@ import javax.mail.*
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 
-class SendEmailToUser {
+class SendEmailToTheUser {
 
     companion object {
 
         fun sendEmail(
             emailForSending: String,
-            password: String
+            password: String,
+            onSuccess: () -> Unit,
+            onFailure: (Exception) -> Unit
         ) {
             val executorService = Executors.newSingleThreadExecutor()
             executorService.execute {
@@ -22,9 +24,9 @@ class SendEmailToUser {
                         password = password
                     )
                     Transport.send(message)
-                    handleSuccessCallback()
+                    onSuccess()
                 } catch (e: Exception) {
-                    handleFailureCallback(e)
+                    onFailure(e)
                 }
             }
             executorService.shutdown() // Завершение работы ExecutorService
@@ -65,16 +67,5 @@ class SendEmailToUser {
                 }
             })
         }
-
-        private fun handleSuccessCallback() {
-            // Код обработки успешного обратного вызова
-            println("Письмо успешно отправлено! \nТак же рекомендуем проверить папку СПАМ")
-        }
-
-        private fun handleFailureCallback(e: java.lang.Exception) {
-            // Код обработки обратного вызова при ошибке
-            println("Возникла ошибка при отправке письма: " + e.message)
-        }
-
     }
 }
