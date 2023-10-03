@@ -4,9 +4,9 @@ import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import org.jetbrains.exposed.sql.Database
-import ru.marinovdev.features.login.configureLoginRouting
 import ru.marinovdev.features.register.configureRegisterRouting
 import ru.marinovdev.features.send_email.configureSenderEmailRouting
+import ru.marinovdev.features.sign_in.configureSignInRouting
 import ru.marinovdev.plugins.configureRouting
 import ru.marinovdev.plugins.configureSerialization
 
@@ -35,34 +35,14 @@ fun main() {
     } catch (e: Exception) {
         println("try catch fun main e=" + e)
     }
-
-
 }
 
 
 fun Application.module() {
     configureRouting()
-    configureLoginRouting()
+    configureSignInRouting()
     configureRegisterRouting()
     configureSerialization()
     configureSenderEmailRouting()
+   // configureSecurity()
 }
-
-
-//fun main() {
-//    // Сконфигурировать БД
-//    val url = "jdbc:postgresql://localhost:5432/car_fuel"
-//    val user = "RomanMarinov"
-//    val password = "123qweRT"
-//    Database.connect(url, driver = "org.postgresql.Driver", user = user, password = password)
-//
-//    embeddedServer(CIO, port = 8080, host = "0.0.0.0", module = Application::module)
-//        .start(wait = true)
-//}
-//
-//fun Application.module() {
-//    configureRouting()
-//    configureLoginRouting()
-//    configureRegisterRouting()
-//    configureSerialization()
-//}

@@ -10,7 +10,7 @@ fun Application.configureSenderEmailRouting() {
         routing {
             post("/password") {
                 val senderEmailController = SenderEmailController(call)
-                senderEmailController.sendEmail()
+                senderEmailController.fetchAndSend()
             }
         }
     } catch (e: Exception) {
