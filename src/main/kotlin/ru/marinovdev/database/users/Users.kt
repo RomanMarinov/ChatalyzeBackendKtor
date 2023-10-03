@@ -6,42 +6,63 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
 
-object Users : Table("users") {
-    private val login = Users.varchar("login", 25)
-    private val password = Users.varchar("password", 25)
-    private val username = Users.varchar("username", 30)
-    private val email = Users.varchar("email", 25)
+object Users : Table("user") {
 
-    fun insert(userDTO: UserDTO) {
+    private val email = Users.varchar("email", 30)
+    private val password = Users.varchar("password", 30)
+
+    fun insertUser(
+        userDTO: UserDTO,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
         try {
             transaction {
                 Users.insert {
-                    it[login] = userDTO.login
+                    it[email] = userDTO.email
                     it[password] = userDTO.password
-                    it[username] = userDTO.username
-                    it[email] = userDTO.email ?: ""
                 }
+                onSuccess()
             }
         } catch (e: Exception) {
-            println("try catch 3 e=" + e)
+            onFailure(e)
         }
     }
 
-    fun fetch(login: String): UserDTO? {
-        return transaction {
-            try {
-                val userModel = Users.select { Users.login.eq(login) }.single()
-                UserDTO(
-                    login = userModel[Users.login],
+    fun fetchUser(
+        receivedEmail: String,
+        onSuccess: (UserDTO?) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        return try {
+            transaction {
+                val userModel = Users.select { email.eq(receivedEmail) }.single()
+                val userDTO = UserDTO(
+                    email = userModel[email],
                     password = userModel[password],
-                    username = userModel[username],
-                    email = userModel[email]
                 )
-            } catch (e: Exception) {
-                println("try catch 4 e=" + e)
-                null
+                onSuccess(userDTO)
             }
+        } catch (e: NoSuchElementException) {
+            onSuccess(null)
+        }
+        catch (e: Exception) {
+            onFailure(e)
         }
     }
 
+    fun checkEmailExists(
+        emailFromDb: String,
+        onSuccess: (Boolean) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        return try {
+            transaction {
+                val emailExists = Users.select { email.eq(emailFromDb) }.any()
+                onSuccess(emailExists)
+            }
+        } catch (e: Exception) {
+            onFailure(e)
+        }
+    }
 }

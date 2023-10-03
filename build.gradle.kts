@@ -45,4 +45,14 @@ dependencies {
     // sending email
     implementation("javax.mail:javax.mail-api:1.6.2")
     implementation("com.sun.mail:javax.mail:1.6.2")
+
+    // auth jwt
+    implementation("io.ktor:ktor-server-auth-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-auth-jwt-jvm:$ktor_version")
+//    implementation("io.ktor:ktor-auth:$ktor_version")
+//    implementation("io.ktor:ktor-auth-jwt:$ktor_version")
+//    implementation("io.ktor:jwt:$ktor_version")
+//
+//    implementation("com.auth0:java-jwt:3.18.1")
+
 }
