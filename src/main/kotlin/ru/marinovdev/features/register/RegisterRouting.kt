@@ -11,6 +11,19 @@ fun Application.configureRegisterRouting() {
             post("/register") {
                 val registerController = RegisterController(call)
                 registerController.registerNewUser()
+
+//                println(":::::::::::insertTokenIntoDataBaseAndSend onSuccess")
+//                val registerResponseRemoteJson = Json.encodeToString(RegisterResponseRemote(token = "mytoken"))
+//
+//                        // отправляю клиенту сгенеренный токен чтобы он хранил его у себя и при входе чекался
+//                        println(":::::::::::call.respond 5")
+//                        call.respond(
+//                            MessageResponse(
+//                                HttpStatusCode.OK.value,
+//                                message = registerResponseRemoteJson
+//                            )
+//                        )
+
             }
         }
     } catch (e: Exception) {

@@ -1,23 +1,46 @@
 package ru.marinovdev.database.tokens
 
+import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
-object Tokens : Table("tokens") {
-    private val id = Tokens.varchar("id", 50)
-    private val login = Tokens.varchar("login", 25)
-    private val token = Tokens.varchar("token", 50)
+object Tokens : Table("token") {
+    private val email = Tokens.varchar("email", 30)
+    private val token = Tokens.varchar("token", 100)
 
-    fun insert(tokenDTO: TokenDTO) {
-        transaction {
-            Tokens.insert {
-                it[id] = tokenDTO.rowId
-                it[login] = tokenDTO.login
-                it[token] = tokenDTO.token
+    fun insertToken(
+        tokenDTO: TokenDTO,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit) {
+        try {
+            transaction {
+                Tokens.insert {
+                    it[email] = tokenDTO.email
+                    it[token] = tokenDTO.token
+                }
+                onSuccess()
             }
+        } catch (e: Exception) {
+            onFailure(e)
         }
     }
 
-
+    fun fetchToken(
+        receivedEmail: String,
+        onSuccess: (String) -> Unit,
+        onFailure: (Exception) -> Unit) {
+        try {
+            transaction {
+                val result: ResultRow? = Tokens.select { email eq receivedEmail }.singleOrNull()
+                val tokenValue = result?.get(token)
+                tokenValue?.let {
+                    onSuccess(it)
+                }
+            }
+        } catch (e: Exception) {
+            onFailure(e)
+        }
+    }
 }
