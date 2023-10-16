@@ -1,33 +1,34 @@
 package ru.marinovdev.features.register
 
-
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
+import ru.marinovdev.features.auth_lackner.security.hashing.HashingService
 
-
-fun Application.configureRegisterRouting() {
+fun Application.configureRegisterRouting(hashingService: HashingService) {
     try {
         routing {
             post("/register") {
-                val registerController = RegisterController(call)
-                registerController.registerNewUser()
-
-//                println(":::::::::::insertTokenIntoDataBaseAndSend onSuccess")
-//                val registerResponseRemoteJson = Json.encodeToString(RegisterResponseRemote(token = "mytoken"))
-//
-//                        // отправляю клиенту сгенеренный токен чтобы он хранил его у себя и при входе чекался
-//                        println(":::::::::::call.respond 5")
-//                        call.respond(
-//                            MessageResponse(
-//                                HttpStatusCode.OK.value,
-//                                message = registerResponseRemoteJson
-//                            )
-//                        )
+                val registerController = RegisterController(call, hashingService = hashingService)
+                registerController.registerUser()
 
             }
         }
     } catch (e: Exception) {
-        println("try catch e=" + e)
+        println("try catch register e=" + e)
     }
-
 }
+
+
+//fun Application.configureRegisterRouting() {
+//    try {
+//        routing {
+//            post("/register") {
+//                val registerController = RegisterController(call)
+//                registerController.registerUser()
+//
+//            }
+//        }
+//    } catch (e: Exception) {
+//        println("try catch e=" + e)
+//    }
+//}
