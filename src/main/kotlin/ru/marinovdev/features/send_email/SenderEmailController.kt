@@ -19,7 +19,7 @@ class SenderEmailController(
             val receivedEmail = call.receive<SenderEmailReceiveRemote>()
             println(":::::::::::Пришло от клиента при отправке от него почты если он забыл пароль =$receivedEmail")
 
-            Users.fetchUser(
+            Users.fetchUserByEmail(
                 receivedEmail = receivedEmail.email,
                 onSuccess = {
                     if (it == null) {

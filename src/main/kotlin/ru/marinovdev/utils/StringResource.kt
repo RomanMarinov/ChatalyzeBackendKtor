@@ -12,6 +12,8 @@ object StringResource {
 
     const val USER_CREATION_ERROR = "User creation error! Try again later"
     const val GET_USER_ERROR = "Get user error! Try again later"
+    const val DELETE_USER_ERROR = "Delete user error! Try again later"
+    const val DELETE_OBJECT_TOKEN_ERROR = "Delete object token error! Try again later"
     const val FETCH_AND_SEND_ERROR = "Fetch and send error! Try again later"
     const val TOKEN_CREATION_ERROR = "Token creation error!"
     const val CHECK_EMAIL_EXISTS_ERROR = "Check email error!"
