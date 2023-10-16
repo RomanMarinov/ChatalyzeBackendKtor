@@ -1,8 +1,8 @@
 package ru.marinovdev.database.tokens
 
 data class TokenDTO(
-    val email: String,
-    val token: String
+    val userId: Int,
+    val refreshToken: String
 )
 
 

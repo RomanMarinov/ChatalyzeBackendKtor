@@ -10,7 +10,8 @@ import ru.marinovdev.database.users.Users
 import ru.marinovdev.model.MessageResponse
 import ru.marinovdev.utils.StringResource
 
-class SenderEmailController(private val call: ApplicationCall) {
+class SenderEmailController(
+    private val call: ApplicationCall) {
 
     // передаем модель которую получили от клиента
     suspend fun fetchAndSend() {
@@ -18,11 +19,12 @@ class SenderEmailController(private val call: ApplicationCall) {
             val receivedEmail = call.receive<SenderEmailReceiveRemote>()
             println(":::::::::::Пришло от клиента при отправке от него почты если он забыл пароль =$receivedEmail")
 
-            Users.fetchUser(
+            Users.fetchUserByEmail(
                 receivedEmail = receivedEmail.email,
                 onSuccess = {
                     if (it == null) {
                         runBlocking {
+                            println(":::::::::::SenderEmailController fetchUser onSuccess")
                             call.respond(
                                 MessageResponse(
                                     httpStatusCode = HttpStatusCode.BadRequest.value,
@@ -64,14 +66,15 @@ class SenderEmailController(private val call: ApplicationCall) {
         val password = "123qweRT"
 
         SendEmailToTheUser.sendEmail(
-            emailForSending = email,
+            emailForSending = userDTO.email,
             password = password,
             onSuccess = { // 200
                 runBlocking {
+                    println(":::::::::::sendPasswordByEmail sendEmail onSuccess")
                     call.respond(
                         MessageResponse(
                             httpStatusCode = HttpStatusCode.OK.value,
-                            message = "The letter was successfully sent to $email! " +
+                            message = "The letter was successfully sent to ${userDTO.email}! " +
                                     "\nWe also recommend checking your SPAM address"
                         )
                     )
@@ -79,6 +82,7 @@ class SenderEmailController(private val call: ApplicationCall) {
             },
             onFailure = { e -> // 500
                 runBlocking {
+                    println(":::::::::::sendPasswordByEmail sendEmail onFailure")
                     call.respond(
                         MessageResponse(
                             httpStatusCode = HttpStatusCode.InternalServerError.value,
