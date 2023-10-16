@@ -10,7 +10,8 @@ data class SignInReceiveRemote(
 
 @Serializable
 data class SignInResponseRemote(
-    val token: String
+    val accessToken: String,
+    val refreshToken: String
 )
 
 //@Serializable

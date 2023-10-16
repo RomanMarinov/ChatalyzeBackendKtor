@@ -3,6 +3,7 @@ package ru.marinovdev.database.users
 class UserDTO(
     val email: String,
     val password: String,
+    val salt: String,
 )
 
 //class UserDTO(
