@@ -32,6 +32,7 @@ dependencies {
     // преобразовывать объекты в формат JSON и обратно
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
 
+
     // dependencies for postgres
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
@@ -54,5 +55,12 @@ dependencies {
 //    implementation("io.ktor:jwt:$ktor_version")
 //
 //    implementation("com.auth0:java-jwt:3.18.1")
+
+    implementation("commons-codec:commons-codec:1.16.0")
+
+    // coroutine
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
+
+    //
 
 }
