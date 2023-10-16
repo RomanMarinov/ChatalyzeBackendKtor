@@ -31,7 +31,7 @@ class SignInController(
         val receive = call.receive<SignInReceiveRemote>() // получаем логин от клиента
         println("SignInController receive=" + receive)
 
-        Users.fetchUser(
+        Users.fetchUserByEmail(
             receivedEmail = receive.email,
             onSuccess = { userDto ->
                 if (userDto != null) {
