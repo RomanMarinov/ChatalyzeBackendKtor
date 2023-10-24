@@ -1,10 +1,7 @@
 package ru.marinovdev.database.users
 
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object Users : Table("users") {
@@ -129,6 +126,31 @@ object Users : Table("users") {
         } catch (e: Exception) {
             onFailure(e)
         }
+    }
+
+    fun updatePasswordAndSalt(
+        emailReceived: String,
+        passwordGenerated: String,
+        saltGenerated: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        try {
+            transaction {
+                println(":::::::::::::::email=" + email + " emailReceived=" + emailReceived)
+
+
+                Users.update({ email eq emailReceived }) {
+                    it[password] = passwordGenerated
+                    it[salt] = saltGenerated
+                }
+
+            }
+            onSuccess()
+        } catch (e: Exception) {
+            onFailure(e)
+        }
+
     }
 
 

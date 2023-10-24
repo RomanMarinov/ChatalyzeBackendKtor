@@ -61,6 +61,7 @@ dependencies {
     // coroutine
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
 
-    //
+    // websocket
+    implementation("io.ktor:ktor-client-websockets:$ktor_version")
 
 }

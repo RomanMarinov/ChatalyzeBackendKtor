@@ -2,7 +2,7 @@ package ru.marinovdev.features.register
 
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
-import ru.marinovdev.features.auth_lackner.security.hashing.HashingService
+import ru.marinovdev.features.auth_lackner.security.hashing_password.HashingService
 
 fun Application.configureRegisterRouting(hashingService: HashingService) {
     try {

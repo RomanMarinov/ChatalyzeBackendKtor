@@ -7,8 +7,8 @@ import io.ktor.server.response.*
 import kotlinx.coroutines.runBlocking
 import ru.marinovdev.database.users.UserDTO
 import ru.marinovdev.database.users.Users
-import ru.marinovdev.features.auth_lackner.security.hashing.HashingService
-import ru.marinovdev.features.auth_lackner.security.hashing.SaltedHash
+import ru.marinovdev.features.auth_lackner.security.hashing_password.HashingService
+import ru.marinovdev.features.auth_lackner.security.hashing_password.SaltedHash
 import ru.marinovdev.model.MessageResponse
 import ru.marinovdev.utils.StringResource
 
