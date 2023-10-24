@@ -5,19 +5,21 @@ import io.ktor.server.application.*
 import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import ru.marinovdev.features.auth_lackner.security.hashing.SHA256HashingService
+import ru.marinovdev.features.auth_lackner.security.hashing_code.SHA256HashingCodeService
+import ru.marinovdev.features.auth_lackner.security.hashing_password.SHA256HashingService
 import ru.marinovdev.features.auth_lackner.security.token.AccessTokenConfig
 import ru.marinovdev.features.auth_lackner.security.token.JwtTokenService
 import ru.marinovdev.features.auth_lackner.security.token.RefreshTokenConfig
 import ru.marinovdev.features.database.configureDatabase
 import ru.marinovdev.features.delete_profile.configureDeleteProfileRouting
+import ru.marinovdev.features.forgot_password.user_code.configureForgotPasswordUserCodeRouting
+import ru.marinovdev.features.forgot_password.user_email.configureForgotPasswordUserEmailRouting
+import ru.marinovdev.features.forgot_password.user_password.configureForgotPasswordUserPasswordRouting
 import ru.marinovdev.features.logout.configureLogoutRouting
 import ru.marinovdev.features.register.configureRegisterRouting
-import ru.marinovdev.features.send_email.configureSenderEmailRouting
 import ru.marinovdev.features.sign_in.configureSignInRouting
 import ru.marinovdev.plugins.configureContentNegotiation
 import ru.marinovdev.plugins.configureSecurity
-
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module).start(wait = true)
@@ -45,9 +47,10 @@ fun Application.module() {
         secret = secret
     )
 
-
     val hashingService = SHA256HashingService()
     val jwtTokenService = JwtTokenService()
+    val hashingCodeService = SHA256HashingCodeService()
+
     configureSignInRouting(
         hashingService = hashingService,
         jwtTokenService = jwtTokenService,
@@ -59,7 +62,13 @@ fun Application.module() {
     // configureAuthenticate()
     // configureSecret()
     configureContentNegotiation()
-    configureSenderEmailRouting()
+    configureForgotPasswordUserEmailRouting(
+        hashingCodeService = hashingCodeService
+    )
+    configureForgotPasswordUserCodeRouting(
+        hashingCodeService = hashingCodeService
+    )
+    configureForgotPasswordUserPasswordRouting(hashingService = hashingService)
     configureSecurity(accessTokenConfig, HoconApplicationConfig(ConfigFactory.load()))
     configureDeleteProfileRouting(jwtTokenService = jwtTokenService)
 }
