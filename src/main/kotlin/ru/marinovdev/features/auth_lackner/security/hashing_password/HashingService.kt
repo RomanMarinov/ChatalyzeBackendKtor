@@ -1,4 +1,4 @@
-package ru.marinovdev.features.auth_lackner.security.hashing
+package ru.marinovdev.features.auth_lackner.security.hashing_password
 
 interface HashingService {
     fun generateSaltHash(password: String, saltLength: Int = 32) : SaltedHash
