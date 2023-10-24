@@ -7,40 +7,68 @@ import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 
 class SendEmailToTheUser {
-
     companion object {
-
         fun sendEmail(
             emailForSending: String,
-            password: String,
+            code: String,
             onSuccess: () -> Unit,
             onFailure: (Exception) -> Unit
         ) {
-            val executorService = Executors.newSingleThreadExecutor()
-            executorService.execute {
-                try {
+            try {
+
+                val executorService = Executors.newSingleThreadExecutor()
+                executorService.execute {
                     val message: Message = createEmailMessage(
                         emailForSending = emailForSending,
-                        password = password
+                        code = code
                     )
                     Transport.send(message)
-                    onSuccess()
-                } catch (e: Exception) {
-                    onFailure(e)
+                    executorService.shutdown() // Завершение работы ExecutorService
                 }
+                onSuccess()
+            } catch (e: Exception) {
+                println(":::::::::::try catch sendEmail onFailure e=" + e.localizedMessage)
+                onFailure(e)
             }
-            executorService.shutdown() // Завершение работы ExecutorService
+
         }
 
+
+//        fun sendEmail(
+//            emailForSending: String,
+//            code: String,
+//            onSuccess: () -> Unit,
+//            onFailure: (Exception) -> Unit
+//        ) {
+//            val executorService = Executors.newSingleThreadExecutor()
+//            executorService.execute {
+//                try {
+//                    val message: Message = createEmailMessage(
+//                        emailForSending = emailForSending,
+//                        code = code
+//                    )
+//                    Transport.send(message)
+//                    onSuccess()
+//                } catch (e: Exception) {
+//                    println(":::::::::::try catch sendEmail onFailure e=" + e.localizedMessage)
+//                    onFailure(e)
+//                }
+//            }
+//            executorService.shutdown() // Завершение работы ExecutorService
+//        }
+
         @Throws(MessagingException::class)
-        private fun createEmailMessage(emailForSending: String, password: String): Message {
+        private fun createEmailMessage(
+            emailForSending: String,
+            code: String
+        ): Message {
 
             val session = createSession()
             val message: Message = MimeMessage(session)
-            message.subject = "Password to enter the Chatalyze app"
+            message.subject = "Verification code the Chatalyze app"
             val htmlContent = "<html><head><meta charset='UTF-8'></head><body>" +
-                    "<p><strong>Hello my dear friend!</strong></p>" +
-                    "<p><strong>Password: </strong></p><h1 style='color: #008080;'>" + password + "</h1>" +
+                    "<p><strong>My dear friend!</strong></p>" +
+                    "<p><strong>Your code: </strong></p><h1 style='color: #008080;'>" + code + "</h1>" +
                     "</body></html>"
             message.setContent(htmlContent, "text/html; charset=utf-8")
             val iAm = "marinov.dev.88@gmail.com"

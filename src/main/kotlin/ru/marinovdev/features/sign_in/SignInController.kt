@@ -11,8 +11,8 @@ import ru.marinovdev.database.tokens.TokenDTO
 import ru.marinovdev.database.tokens.Tokens
 import ru.marinovdev.database.users.UserDTO
 import ru.marinovdev.database.users.Users
-import ru.marinovdev.features.auth_lackner.security.hashing.HashingService
-import ru.marinovdev.features.auth_lackner.security.hashing.SaltedHash
+import ru.marinovdev.features.auth_lackner.security.hashing_password.HashingService
+import ru.marinovdev.features.auth_lackner.security.hashing_password.SaltedHash
 import ru.marinovdev.features.auth_lackner.security.token.AccessTokenConfig
 import ru.marinovdev.features.auth_lackner.security.token.RefreshTokenConfig
 import ru.marinovdev.features.auth_lackner.security.token.TokenClaim
@@ -137,6 +137,10 @@ class SignInController(
                 userIdValue = userIdFromDb
             )
         )
+
+        // удалить рефреш токен сначала
+
+
 
         Tokens.insertRefreshToken(TokenDTO(
             userId = userIdFromDb,
