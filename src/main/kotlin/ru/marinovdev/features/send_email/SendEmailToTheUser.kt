@@ -15,7 +15,6 @@ class SendEmailToTheUser {
             onFailure: (Exception) -> Unit
         ) {
             try {
-
                 val executorService = Executors.newSingleThreadExecutor()
                 executorService.execute {
                     val message: Message = createEmailMessage(
