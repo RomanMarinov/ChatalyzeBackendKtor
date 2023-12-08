@@ -5,74 +5,82 @@ import io.ktor.server.application.*
 import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import ru.marinovdev.features.auth_lackner.security.hashing_code.SHA256HashingCodeService
-import ru.marinovdev.features.auth_lackner.security.hashing_password.SHA256HashingService
-import ru.marinovdev.features.auth_lackner.security.token.AccessTokenConfig
-import ru.marinovdev.features.auth_lackner.security.token.JwtTokenService
-import ru.marinovdev.features.auth_lackner.security.token.RefreshTokenConfig
 import ru.marinovdev.features.database.configureDatabase
-import ru.marinovdev.features.delete_profile.configureDeleteProfileRouting
-import ru.marinovdev.features.forgot_password.user_code.configureForgotPasswordUserCodeRouting
-import ru.marinovdev.features.forgot_password.user_email.configureForgotPasswordUserEmailRouting
-import ru.marinovdev.features.forgot_password.user_password.configureForgotPasswordUserPasswordRouting
-import ru.marinovdev.features.logout.configureLogoutRouting
-import ru.marinovdev.features.register.configureRegisterRouting
-import ru.marinovdev.features.sign_in.configureSignInRouting
-import ru.marinovdev.plugins.configureContentNegotiation
-import ru.marinovdev.plugins.configureSecurity
+import ru.marinovdev.plugins.*
+import ru.marinovdev.routing.*
+
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module).start(wait = true)
+
+//
+//    val client = HttpClient {
+//        install(WebSockets)
+//    }
+//    runBlocking {
+//        client.webSocket(method = HttpMethod.Get, host = "192.168.0.100", port = 8080, path = "/chat") {
+//            val messageOutputRoutine = launch { outputMessages() }
+//            val userInputRoutine = launch { inputMessages() }
+//
+//            userInputRoutine.join() // Wait for completion; either "exit" or error
+//            messageOutputRoutine.cancelAndJoin()
+//        }
+//    }
+//    client.close()
+
+
+
+
+  //  println("Connection closed. Goodbye!")
 }
 
 fun Application.module() {
+    configureKoin()//
+    configureDatabase()//
+    configureContentNegotiation()//
+    configureSocketsParams()//
 
-    configureDatabase()
+    configureSocketConnectionAndMessagingRouting()//
 
-    val issuer = HoconApplicationConfig(ConfigFactory.load()).property("jwt.issuer").getString()
-    val audience = HoconApplicationConfig(ConfigFactory.load()).property("jwt.audience").getString()
-    val secret = HoconApplicationConfig(ConfigFactory.load()).property("jwt.secret").getString()
+    configureSecurity()
 
-    val accessTokenConfig = AccessTokenConfig(
-        issuer = issuer,
-        audience = audience,
-        expiresIn = 1L * 24L * 60L * 60L * 1000L,
-        secret = secret
-    )
+    configureAuthentication(HoconApplicationConfig(ConfigFactory.load()))
 
-    val refreshTokenConfig = RefreshTokenConfig(
-        issuer = issuer,
-        audience = audience,
-        expiresIn = 30L * 24L * 60L * 60L * 1000L,
-        secret = secret
-    )
+    configureRegisterRouting()//
+    configureSignInRouting()
 
-    val hashingService = SHA256HashingService()
-    val jwtTokenService = JwtTokenService()
-    val hashingCodeService = SHA256HashingCodeService()
+    configureForgotPasswordUserEmailRouting()
+    configureForgotPasswordUserCodeRouting()
+    configureForgotPasswordUserPasswordRouting()
 
-    configureSignInRouting(
-        hashingService = hashingService,
-        jwtTokenService = jwtTokenService,
-        accessTokenConfig = accessTokenConfig,
-        refreshTokenConfig = refreshTokenConfig
-    )
-    configureRegisterRouting(hashingService = hashingService)
     configureLogoutRouting()
+    configureDeleteProfileRouting()
     // configureAuthenticate()
     // configureSecret()
-    configureContentNegotiation()
-    configureForgotPasswordUserEmailRouting(
-        hashingCodeService = hashingCodeService
-    )
-    configureForgotPasswordUserCodeRouting(
-        hashingCodeService = hashingCodeService
-    )
-    configureForgotPasswordUserPasswordRouting(hashingService = hashingService)
-    configureSecurity(accessTokenConfig, HoconApplicationConfig(ConfigFactory.load()))
-    configureDeleteProfileRouting(jwtTokenService = jwtTokenService)
 }
-
+//suspend fun DefaultClientWebSocketSession.outputMessages() {
+//    try {
+//        for (message in incoming) {
+//            message as? Frame.Text ?: continue
+//            println(message.readText())
+//        }
+//    } catch (e: Exception) {
+//        println("Error while receiving: " + e.localizedMessage)
+//    }
+//}
+//
+//suspend fun DefaultClientWebSocketSession.inputMessages() {
+//    while (true) {
+//        val message = readLine() ?: ""
+//        if (message.equals("exit", true)) return
+//        try {
+//            send(message)
+//        } catch (e: Exception) {
+//            println("Error while sending: " + e.localizedMessage)
+//            return
+//        }
+//    }
+//}
 
 ///////////////////////////////////////////////////////
 

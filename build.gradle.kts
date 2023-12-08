@@ -1,6 +1,6 @@
-
 val ktor_version: String by project
 val kotlin_version: String by project
+val koin_version: String by project
 val logback_version: String by project
 val exposed_version: String by project
 
@@ -31,7 +31,7 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:$ktor_version")
     // преобразовывать объекты в формат JSON и обратно
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
-
+    implementation ("com.google.code.gson:gson:2.8.8")
 
     // dependencies for postgres
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
@@ -62,6 +62,18 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
 
     // websocket
-    implementation("io.ktor:ktor-client-websockets:$ktor_version")
+    implementation("io.ktor:ktor-server-websockets-jvm:$ktor_version")
 
+    // sessions
+    implementation("io.ktor:ktor-server-sessions:$ktor_version")
+
+    // Koin
+    implementation("io.insert-koin:koin-core:$koin_version")
+    implementation("io.insert-koin:koin-logger-slf4j:$koin_version")
+    //   implementation("io.insert-koin:koin-core-jvm:$koin_version")
+    // implementation("io.insert-koin:koin-ktor:3.2.0")
+
+    implementation("io.insert-koin:koin-ktor:$koin_version")
+
+    implementation("org.jetbrains.exposed:exposed-java-time:0.30.1")
 }
