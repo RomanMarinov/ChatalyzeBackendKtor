@@ -1,34 +1,48 @@
 package ru.marinovdev.plugins
 
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
-import io.ktor.server.config.*
-import ru.marinovdev.features.auth_lackner.security.token.AccessTokenConfig
+import io.ktor.server.sessions.*
+import io.ktor.util.*
+import ru.marinovdev.data.socket_connection.ChatSession
 
-fun Application.configureSecurity(tokenConfig: AccessTokenConfig, hoconApplicationConfig: HoconApplicationConfig) {
-    authentication {
-        jwt {
-            realm = hoconApplicationConfig.property("jwt.realm_value").getString()
-            verifier(
-                JWT
-                    .require(Algorithm.HMAC256(tokenConfig.secret))
-                    .withAudience(tokenConfig.audience)
-                    .withIssuer(tokenConfig.issuer)
-                    .build()
-            )
+fun Application.configureSecurity() {
+    install(Sessions) {
+        cookie<ChatSession>("SESSION")
+    }
 
-            validate { credential ->
-                if (credential.payload.audience.contains(tokenConfig.audience)) {
-                    JWTPrincipal(credential.payload)
-                } else null
-            }
+    println(":::::::::::::::::::configureSecurity execute")
+    intercept(ApplicationCallPipeline.Features) {
+        println(":::::::::::::::::::configureSecurity execute 2")
+        if(call.sessions.get<ChatSession>() == null) {
+            val userPhone = call.parameters["sender"] ?: "Guest"
+            call.sessions.set(ChatSession(sender = userPhone, sessionId = generateNonce()))
         }
     }
 }
 
+
+///////////////////////////
+//fun Application.configureSecurity(tokenConfig: AccessTokenConfig, hoconApplicationConfig: HoconApplicationConfig) {
+//    authentication {
+//        jwt {
+//            realm = hoconApplicationConfig.property("jwt.realm_value").getString()
+//            verifier(
+//                JWT
+//                    .require(Algorithm.HMAC256(tokenConfig.secret))
+//                    .withAudience(tokenConfig.audience)
+//                    .withIssuer(tokenConfig.issuer)
+//                    .build()
+//            )
+//
+//            validate { credential ->
+//                if (credential.payload.audience.contains(tokenConfig.audience)) {
+//                    JWTPrincipal(credential.payload)
+//                } else null
+//            }
+//        }
+//    }
+//}
+//////////////////////////////////
 //fun Application.configureSecurity(config: TokenConfig) {
 //    authentication {
 //        jwt {
