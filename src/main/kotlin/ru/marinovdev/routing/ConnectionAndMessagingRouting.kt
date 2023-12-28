@@ -25,7 +25,7 @@ fun Application.configureSocketConnectionAndMessagingRouting() {
     val socketMessageController by KoinJavaComponent.inject<SocketMessageController>(SocketMessageController::class.java)
     val socketStateUserController by KoinJavaComponent.inject<SocketStateUserController>(SocketStateUserController::class.java)
     install(Routing) {
-        chatSocket(socketMessageController)
+        chatSocket(socketMessageController, socketStateUserController)
         getAllMessages(socketMessageController)
         getChats(socketMessageController)
         getStateUsersConnect(socketStateUserController)

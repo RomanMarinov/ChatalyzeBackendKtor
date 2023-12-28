@@ -6,5 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class LogoutReceiveRemote(
     @SerialName("refresh_token")
-    val refresh_token: String
+    val refresh_token: String,
+    @SerialName("sender_phone")
+    val sender_phone: String
 )

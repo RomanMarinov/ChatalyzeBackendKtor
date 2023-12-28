@@ -4,9 +4,9 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
-import io.ktor.server.sessions.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -14,17 +14,17 @@ import kotlinx.serialization.json.JsonObject
 import ru.marinovdev.data.messages.model.Message
 import ru.marinovdev.data.messages.model.Sender
 import ru.marinovdev.data.messages.model.UserPairChat
-import ru.marinovdev.data.socket_connection.ChatSession
 import ru.marinovdev.data.user_manager.UserSocketManager
+import ru.marinovdev.data.users_session.dto.MessageWrapper
 import ru.marinovdev.domain.repository.MessageDataSourceRepository
 
 // это момент когда я решил переделать под себя
 class SocketMessageController(
-    private val messageDataSourceRepository: MessageDataSourceRepository,
+    private val messageDataSourceRepository: MessageDataSourceRepository
 ) {
 //    private val members = ConcurrentHashMap<String, Member>()
 
-    fun onJoin(userPhone: String, sessionId: String, socket: WebSocketSession) {
+    suspend fun onJoin(userPhone: String, sessionId: String, socket: WebSocketSession) {
 //        if (members.containsKey(userPhone)) {
 //            println(":::::::::::::::::::::::MemberAlreadyExistsException()")
 //            throw MemberAlreadyExistsException()
@@ -38,7 +38,7 @@ class SocketMessageController(
         /////////////////////////// моя новая добавление
         val userAlreadyExists = UserSocketManager.checkContainsUser(userPhone = userPhone)
         if (userAlreadyExists) {
-
+            UserSocketManager.removeMemberByUserPhone(userPhone = userPhone)
         } else {
             UserSocketManager.addUser(
                 userPhone = userPhone,
@@ -46,84 +46,119 @@ class SocketMessageController(
                 socket = socket
             )
         }
-        ////////////////////////
-
-
     }
 
     /////////////////////////////////
     // метод сработает когда клиент отправит сообщение
     // тут надо сделать сразу вставку в бд объект отправителя получателя и текст
     suspend fun sendMessage(senderUsername: String, message: String) {
+        try {
+            val jsonObject = Json.decodeFromString<JsonObject>(message)
+            val sender = jsonObject["sender"].toString().replace("\"", "")
+            val recipient = jsonObject["recipient"].toString().replace("\"", "")
+            val textMessage = jsonObject["textMessage"].toString().replace("\"", "")
 
-        val jsonObject = Json.decodeFromString<JsonObject>(message)
-        val sender = jsonObject["sender"].toString().replace("\"", "")
-        val recipient = jsonObject["recipient"].toString().replace("\"", "")
-        val textMessage = jsonObject["textMessage"].toString()
+            // напимер тут я сделаю вставку в бд, далее мы запишем сообщения в бд. Это
+            val messageEntity = Message(
+                sender = sender,
+                recipient = recipient,
+                textMessage = textMessage,
+                createdAt = ""
+            )
+            messageDataSourceRepository.insertMessage(messageEntity)
 
-        // напимер тут я сделаю вставку в бд, далее мы запишем сообщения в бд. Это
-        val messageEntity = Message(
-            sender = sender,
-            recipient = recipient,
-            textMessage = textMessage,
-            createdAt = ""
-        )
-        messageDataSourceRepository.insertMessage(messageEntity)
-
-        UserSocketManager.getAllUser().forEach { member ->
-            println(":::::::::::::::::RoomController members.values.forEach member.username=" + member.username)
-            println(":::::::::::::::::RoomController members.values.forEach recipient=" + recipient)
-            if (member.username == recipient) {
-                println(":::::::::::::::::RoomController member.username=" + member.username + " toUser=" + recipient)
-                val messageObject = Message(
-                    sender = senderUsername,
-                    recipient = recipient,
-                    textMessage = textMessage,
-                    createdAt = ""
-                )
-                // далее мы запишем сообщение в бд
-                // messageDataSource.insertMessage(messageEntity)
-
-
-                // просто для теста взять полед сообщенеи
-                val lastMessage = messageDataSourceRepository.getLastMessage(
-                    sender = sender,
-                    recipient = recipient,
-                    onFailure = { e ->
-                        println(":::::::::::::::::SocketMessageController getLastMessage e=" + e)
-                    }
-                )
-                val parsedMessage = Json.encodeToString(lastMessage)
-                member.socket.send(Frame.Text(parsedMessage))
+            try {
+//                // отправка получателю
+//                UserSocketManager.getAllUser().forEach { member ->
+//                    println(":::::::::::::::::RoomController members.values.forEach member.username=" + member.userPhone)
+//                    println(":::::::::::::::::RoomController members.values.forEach recipient=" + recipient)
+//                    if (member.userPhone == recipient) {
+//                        println(":::::::::::::::::RoomController member.username=" + member.userPhone + " toUser=" + recipient)
+//                        val messageObject = Message(
+//                            sender = senderUsername,
+//                            recipient = recipient,
+//                            textMessage = textMessage,
+//                            createdAt = ""
+//                        )
+//                        // далее мы запишем сообщение в бд
+//                        // messageDataSource.insertMessage(messageEntity)
+//
+//
+//                        // просто для теста взять полед сообщенеи
+//                        val lastMessage = messageDataSourceRepository.getLastMessage(
+//                            sender = sender,
+//                            recipient = recipient,
+//                            onFailure = { e ->
+//                                println(":::::::::::::::::SocketMessageController getLastMessage e=" + e)
+//                            }
+//                        )
+//
+//
+//
+//                        val parsedMessage = Json.encodeToString(lastMessage)
+//                        member.socket.send(Frame.Text(parsedMessage))
+//                    }
+//                }
+            } catch (e: Exception) {
+                println(":::::::::::::::::try catch SocketMessageController отправка получателю e=" + e)
             }
+
+
+            try {
+                // отправка отправителю
+
+                // пока вижу косяк в том что выполняется два раза ember.username == sender
+                // надо посмотреть все эелемнты UserSocketManager.getAllUser()
+                // и узнать как так получается
+                println(":::::::::::::::UserSocketManager.отправка отправителю")
+                println(":::::::::::::::UserSocketManager.getAllUser().size=" + UserSocketManager.getAllUser().size)
+                UserSocketManager.getAllUser().forEach {
+                    println(":::::::::::::::UserSocketManager it.socket=" + it.socket)
+                    println(":::::::::::::::UserSocketManager it.username=" + it.userPhone)
+                    println(":::::::::::::::UserSocketManager it.sessionId=" + it.sessionId)
+                }
+
+                UserSocketManager.getAllUser().forEach { member ->
+                    if (member.userPhone == sender) {
+                        println(":::::::::::::::::RoomController member.username=" + member.userPhone + " toUser=" + recipient)
+                        val messageObject = Message(
+                            sender = senderUsername,
+                            recipient = recipient,
+                            textMessage = textMessage,
+                            createdAt = ""
+                        )
+
+                        // далее мы запишем сообщение в бд
+                        // messageDataSource.insertMessage(messageEntity)
+
+                        // просто для теста взять полед сообщенеи
+                        val lastMessage = messageDataSourceRepository.getLastMessage(
+                            sender = sender,
+                            recipient = recipient,
+                            onFailure = { e ->
+                                println(":::::::::::::::::SocketMessageController getLastMessage e=" + e)
+                            }
+                        )
+                        delay(10L)
+                        val parsedMessage = Json.encodeToString(lastMessage)
+
+                        val messageText = Json.encodeToString(
+                            MessageWrapper(
+                                type = "singleMessage",
+                                payloadJson = parsedMessage
+                            )
+                        )
+                        member.socket.send(Frame.Text(messageText))
+                        return@forEach
+                    }
+                }
+            } catch (e: Exception) {
+                println(":::::::::::::::::try catch SocketMessageController отправка отправителю e=" + e)
+            }
+        } catch (e: Exception) {
+            println(":::::::::::::::::try catch SocketMessageController sendMessage e=" + e)
         }
 
-        UserSocketManager.getAllUser().forEach { member ->
-            if (member.username == sender) {
-                println(":::::::::::::::::RoomController member.username=" + member.username + " toUser=" + recipient)
-                val messageObject = Message(
-                    sender = senderUsername,
-                    recipient = recipient,
-                    textMessage = textMessage,
-                    createdAt = ""
-                )
-
-                // далее мы запишем сообщение в бд
-                // messageDataSource.insertMessage(messageEntity)
-
-                // просто для теста взять полед сообщенеи
-                val lastMessage = messageDataSourceRepository.getLastMessage(
-                    sender = sender,
-                    recipient = recipient,
-                    onFailure = { e ->
-                        println(":::::::::::::::::SocketMessageController getLastMessage e=" + e)
-                    }
-                )
-
-                val parsedMessage = Json.encodeToString(lastMessage)
-                member.socket.send(Frame.Text(parsedMessage))
-            }
-        }
     }
 
     suspend fun getAllMessages(call: ApplicationCall) {
@@ -145,8 +180,8 @@ class SocketMessageController(
         )
     }
 
-    suspend fun tryDisconnect(username: String) {
-        println("::::::::::::::::::::tryDisconnect")
+    suspend fun tryDisconnect(userPhone: String) {
+        println("::::::::::::::::::::tryDisconnect userPhone=" + userPhone)
 
 //        members[username]?.socket?.close()
 //        if (members.containsKey(username)) {
@@ -154,9 +189,9 @@ class SocketMessageController(
 //            members.remove(username)
 //        }
 
-        UserSocketManager.getUserSocket(userPhone = username)?.close()
-        if (UserSocketManager.checkContainsUser(userPhone = username)) {
-         UserSocketManager.deleteUser(username = username)
+        UserSocketManager.getUserSocket(userPhone = userPhone)?.close()
+        if (UserSocketManager.checkContainsUser(userPhone = userPhone)) {
+         UserSocketManager.removeMemberByUserPhone(userPhone = userPhone)
         }
     }
 
@@ -180,13 +215,13 @@ class SocketMessageController(
     }
 
     suspend fun newMethod(call: ApplicationCall, webSocketServerSession: DefaultWebSocketServerSession) {
-        val session = call.sessions.get<ChatSession>()
-        // Route.chatSocket session=ChatSession(username=89303493563, sessionId=cf7649c162989855)
-        println(":::::::::::::::::Route.chatSocket session=" + session)
-        if (session == null) {
-            webSocketServerSession.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "No session."))
-            return
-        }
+//        val session = call.sessions.get<ChatSession>()
+//        // Route.chatSocket session=ChatSession(username=89303493563, sessionId=cf7649c162989855)
+//        println(":::::::::::::::::Route.chatSocket session=" + session)
+//        if (session == null) {
+//            webSocketServerSession.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "No session."))
+//            return
+//        }
         ///////////////////////
         // как только подключается юзер, я ищу этого юзера в таблице users_session
         // если он там есть то я перезаписываю его

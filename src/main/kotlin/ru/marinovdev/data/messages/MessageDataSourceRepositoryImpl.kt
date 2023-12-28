@@ -212,6 +212,8 @@ class MessageDataSourceRepositoryImpl(
                             createdAt = resultRow[messageEntity.createdAt].toString()
                         )
                     }.firstOrNull()
+
+                println("::::::::::::::::::::::lastMessage=" + lastMessage)
                 lastMessage
             }
         } catch (e: Exception) {
