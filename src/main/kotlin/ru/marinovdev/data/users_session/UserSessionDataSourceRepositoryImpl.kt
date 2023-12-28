@@ -45,22 +45,22 @@ class UserSessionDataSourceRepositoryImpl(
 
     override fun getListOnlineOrDate(
         listRecipient: List<String>,
-        onSuccess: (List<OnlineOrDate>) -> Unit,
+        onSuccess: (List<OnlineUserState>) -> Unit,
         onFailure: (Exception) -> Unit
     ) {
         try {
             transaction {
-                val listOnlineOrDate = listRecipient.mapNotNull { recipientPhone ->
+                val listOnlineUserState = listRecipient.mapNotNull { recipientPhone ->
                     val row =
                         userSocketConnectionEntity.select { userSocketConnectionEntity.userPhone eq recipientPhone }.singleOrNull()
                     row?.let {
-                        OnlineOrDate(
+                        OnlineUserState(
                             userPhone = row[userSocketConnectionEntity.userPhone],
                             onlineOrDate = row[userSocketConnectionEntity.onlineOrDate]
                         )
                     }
                 }
-                onSuccess(listOnlineOrDate)
+                onSuccess(listOnlineUserState)
             }
         } catch (e: Exception) {
             onFailure(e)

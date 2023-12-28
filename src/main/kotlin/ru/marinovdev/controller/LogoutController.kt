@@ -5,6 +5,7 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import kotlinx.coroutines.runBlocking
+import ru.marinovdev.data.user_manager.UserSocketManager
 import ru.marinovdev.domain.model.logout.LogoutReceiveRemote
 import ru.marinovdev.domain.repository.TokensDataSourceRepository
 import ru.marinovdev.model.MessageResponse
@@ -20,7 +21,7 @@ class LogoutController(private val tokensDataSourceRepository: TokensDataSourceR
             onSuccess = { refreshToken ->
                 if (refreshToken != null) {
                     println(":::::::::::logoutUser onSuccess не null checkRefreshTokenToDb=" + refreshToken)
-                    deleteRefreshTokenToDb(refreshToken = refreshToken, call = call)
+                    deleteRefreshTokenToDb(refreshToken = refreshToken, senderPhone = receive.sender_phone, call = call)
                 } else {
                     println(":::::::::::logoutUser onSuccess null checkRefreshTokenToDb=" + refreshToken)
                 }
@@ -38,7 +39,7 @@ class LogoutController(private val tokensDataSourceRepository: TokensDataSourceR
             })
     }
 
-    private fun deleteRefreshTokenToDb(refreshToken: String, call: ApplicationCall) {
+    private fun deleteRefreshTokenToDb(refreshToken: String, senderPhone: String, call: ApplicationCall) {
         tokensDataSourceRepository.deleteRefreshTokenToDb(
             refreshToken = refreshToken,
             onSuccess = {
@@ -50,6 +51,8 @@ class LogoutController(private val tokensDataSourceRepository: TokensDataSourceR
                             message = "Token successfully deleted"
                         )
                     )
+                    removeMemberByUserPhone(userPhone = senderPhone)
+
                     return@runBlocking
                 }
             },
@@ -64,5 +67,9 @@ class LogoutController(private val tokensDataSourceRepository: TokensDataSourceR
                     )
                 }
             })
+    }
+
+    private fun removeMemberByUserPhone(userPhone: String) {
+        UserSocketManager.removeMemberByUserPhone(userPhone = userPhone)
     }
 }
