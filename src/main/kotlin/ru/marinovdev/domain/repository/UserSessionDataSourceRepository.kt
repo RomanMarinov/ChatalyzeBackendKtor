@@ -1,6 +1,6 @@
 package ru.marinovdev.domain.repository
 
-import ru.marinovdev.data.users_session.OnlineOrDate
+import ru.marinovdev.data.users_session.OnlineUserState
 import ru.marinovdev.data.users_session.UserSocketConnection
 
 interface UserSessionDataSourceRepository {
@@ -26,7 +26,7 @@ interface UserSessionDataSourceRepository {
 
     fun getListOnlineOrDate(
         listRecipient: List<String>,
-        onSuccess: (List<OnlineOrDate>) -> Unit,
+        onSuccess: (List<OnlineUserState>) -> Unit,
         onFailure: (Exception) -> Unit
     )
 

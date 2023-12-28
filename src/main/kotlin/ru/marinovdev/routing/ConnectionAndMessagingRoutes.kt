@@ -12,8 +12,12 @@ import ru.marinovdev.controller.SocketMessageController
 import ru.marinovdev.controller.SocketStateUserController
 import ru.marinovdev.data.socket_connection.ChatSession
 import ru.marinovdev.data.socket_connection.MemberAlreadyExistsException
+import ru.marinovdev.data.user_manager.UserSocketManager
 
-fun Route.chatSocket(socketMessageController: SocketMessageController) {
+fun Route.chatSocket(
+    socketMessageController: SocketMessageController,
+    socketStateUserController: SocketStateUserController
+) {
     webSocket("/chatsocket") {
 
         //socketMessageController.newMethod(call = call, webSocketServerSession = this)
@@ -44,6 +48,10 @@ fun Route.chatSocket(socketMessageController: SocketMessageController) {
 //        }
         ///////////////////////
         try {
+            if (UserSocketManager.getAllUser().isEmpty()) {
+                socketStateUserController.getStateUsersConnect()
+            }
+
             println(":::::::::::::::::Route.chatSocket 1")
             socketMessageController.onJoin(
                 userPhone = session.sender,
@@ -63,12 +71,20 @@ fun Route.chatSocket(socketMessageController: SocketMessageController) {
             println(":::::::::::::::::Route.chatSocket 2")
             // далее эта часть кода сработает если клиент отпарвить новый фрейм
             incoming.consumeEach { frame ->
-                println(":::::::::::::::::Route.chatSocket frame=" + frame)
+
                 if (frame is Frame.Text) {
+                    println(":::::::::::::::::Route.chatSocket frame=" + frame.readText())
                     socketMessageController.sendMessage(
                         senderUsername = session.sender,
                         message = frame.readText()
                     )
+
+
+                    //попробовать сделать проверку на объект
+
+
+
+
                 }
             }
         } catch (e: MemberAlreadyExistsException) {
@@ -76,7 +92,7 @@ fun Route.chatSocket(socketMessageController: SocketMessageController) {
         } catch (e: Exception) {
             e.printStackTrace()
         } finally {
-            socketMessageController.tryDisconnect(session.sender)
+            socketMessageController.tryDisconnect(userPhone = session.sender)
         }
     }
 }
@@ -97,6 +113,6 @@ fun Route.getChats(socketMessageController: SocketMessageController) {
 fun Route.getStateUsersConnect(socketStateUserController: SocketStateUserController) {
     get("/state_user_connection") {
         println(":::::::::::::::::Route.getStateUsersConnect")
-        socketStateUserController.getStateUsersConnect(call = call)
+//        socketStateUserController.getStateUsersConnect(call = call)
     }
 }
