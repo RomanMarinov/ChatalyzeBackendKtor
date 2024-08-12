@@ -15,7 +15,7 @@
 [android client repository](https://github.com/RomanMarinov/ChatalyzeCompose.git)
 
 ## Фреймворки, библиотеки
-Kotlin, Jectpack Compose
+
 - jsonwebtoken:jjwt, <br/>
 - ktor, <br/>
 - javax.mail, <br/>
