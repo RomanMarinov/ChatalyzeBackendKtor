@@ -2,13 +2,13 @@ package ru.marinovdev.controller
 
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.config.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import kotlinx.coroutines.runBlocking
 import ru.marinovdev.domain.model.forgot_password.UserPasswordRemote
 import ru.marinovdev.domain.repository.UsersDataSourceRepository
 import ru.marinovdev.features.auth_lackner.security.hashing_password.HashingService
-import ru.marinovdev.features.auth_lackner.security.hashing_password.SaltedHash
 import ru.marinovdev.model.MessageResponse
 import ru.marinovdev.utils.StringResource
 
@@ -16,15 +16,17 @@ class UserPasswordController(
     private val hashingService: HashingService,
     private val usersDataSourceRepository: UsersDataSourceRepository,
 ) {
-    suspend fun changePassword(call: ApplicationCall) {
+    suspend fun changePassword(call: ApplicationCall, hoconApplicationConfig: HoconApplicationConfig) {
         try {
             val receive = call.receive<UserPasswordRemote>()
 
-            val saltHash: SaltedHash = hashingService.generateSaltHash(password = receive.password)
-            usersDataSourceRepository.updatePasswordAndSalt(
+            val passwordHex: String = hashingService.generatePasswordHex(
+                password = receive.password,
+                hoconApplicationConfig = hoconApplicationConfig
+            )
+            usersDataSourceRepository.updatePasswordHex(
                 emailReceived = receive.email,
-                passwordGenerated = saltHash.hashPasswordSalt,
-                saltGenerated = saltHash.salt,
+                passwordGenerated = passwordHex,
                 onSuccess = {
                     println(":::::::::::changePassword onSuccess")
                     runBlocking {

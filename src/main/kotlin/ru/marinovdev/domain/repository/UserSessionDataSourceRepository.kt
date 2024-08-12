@@ -6,7 +6,7 @@ import ru.marinovdev.data.users_session.UserSocketConnection
 interface UserSessionDataSourceRepository {
     fun insertUserSession(
         userPhone: String,
-        onlineOrDate: String,
+        onlineOrOffline: String,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     )
@@ -19,12 +19,26 @@ interface UserSessionDataSourceRepository {
 
     fun updateUserSession(
         userPhone: String,
-        onlineOrDate: String,
+        onlineOrOffline: String,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     )
 
-    fun getListOnlineOrDate(
+    fun updateUserSessionCompanion(
+        senderPone: String,
+        companionPhone: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    )
+
+    fun getUserSessionCompanion(
+        senderPhone: String,
+        companionPhone: String,
+        onSuccess: (Boolean) -> Unit,
+        onFailure: (Exception) -> Unit
+    )
+
+    fun getListOnlineOrOffline(
         listRecipient: List<String>,
         onSuccess: (List<OnlineUserState>) -> Unit,
         onFailure: (Exception) -> Unit

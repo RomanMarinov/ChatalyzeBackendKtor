@@ -16,7 +16,6 @@ class UsersDataSourceRepositoryImpl(private val userEntity: UsersEntity) : Users
                 userEntity.insert {
                     it[userEntity.email] = userDTO.email
                     it[userEntity.password] = userDTO.password
-                    it[userEntity.salt] = userDTO.salt
                 }
                 onSuccess()
             }
@@ -49,8 +48,7 @@ class UsersDataSourceRepositoryImpl(private val userEntity: UsersEntity) : Users
                 val userModel = userEntity.select { userEntity.email.eq(receivedEmail) }.single()
                 val userDTO = UserDTO(
                     email = userModel[userEntity.email],
-                    password = userModel[userEntity.password],
-                    salt = userModel[userEntity.salt]
+                    password = userModel[userEntity.password]
                 )
                 onSuccess(userDTO)
             }
@@ -68,7 +66,6 @@ class UsersDataSourceRepositoryImpl(private val userEntity: UsersEntity) : Users
                 val userDTO = UserDTO(
                     email = userModel[userEntity.email],
                     password = userModel[userEntity.password],
-                    salt = userModel[userEntity.salt]
                 )
                 onSuccess(userDTO)
             }
@@ -101,10 +98,9 @@ class UsersDataSourceRepositoryImpl(private val userEntity: UsersEntity) : Users
         }
     }
 
-    override fun updatePasswordAndSalt(
+    override fun updatePasswordHex(
         emailReceived: String,
         passwordGenerated: String,
-        saltGenerated: String,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
@@ -112,10 +108,9 @@ class UsersDataSourceRepositoryImpl(private val userEntity: UsersEntity) : Users
             transaction {
                 userEntity.update({ userEntity.email eq emailReceived }) {
                     it[userEntity.password] = passwordGenerated
-                    it[userEntity.salt] = saltGenerated
                 }
+                onSuccess()
             }
-            onSuccess()
         } catch (e: Exception) {
             onFailure(e)
         }

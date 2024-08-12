@@ -17,7 +17,8 @@ class UserSessionDataSourceRepositoryImpl(
     ) {
         try {
             transaction {
-                val userSessionExists = userSocketConnectionEntity.select { userSocketConnectionEntity.userPhone.eq(userPhone) }.any()
+                val userSessionExists =
+                    userSocketConnectionEntity.select { userSocketConnectionEntity.userPhone.eq(userPhone) }.any()
                 onSuccess(userSessionExists)
             }
         } catch (e: Exception) {
@@ -27,14 +28,14 @@ class UserSessionDataSourceRepositoryImpl(
 
     override fun updateUserSession(
         userPhone: String,
-        onlineOrDate: String,
+        onlineOrOffline: String,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
         try {
             transaction {
                 userSocketConnectionEntity.update({ userSocketConnectionEntity.userPhone eq userPhone }) {
-                    it[userSocketConnectionEntity.onlineOrDate] = onlineOrDate
+                    it[userSocketConnectionEntity.onlineOrOffline] = onlineOrOffline
                 }
                 onSuccess()
             }
@@ -43,7 +44,67 @@ class UserSessionDataSourceRepositoryImpl(
         }
     }
 
-    override fun getListOnlineOrDate(
+    override fun updateUserSessionCompanion(
+        senderPone: String,
+        companionPhone: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        try {
+
+            transaction {
+              println("::::::::::::: updateUserSessionCompanion senderPone=" + senderPone + " companionPhone=" + companionPhone)
+                val alreadyExistsPhone = userSocketConnectionEntity.select { userSocketConnectionEntity.userPhone eq senderPone }.any()
+                if (alreadyExistsPhone) {
+                    userSocketConnectionEntity.update ({ userSocketConnectionEntity.userPhone eq senderPone }) {
+                        it[userSocketConnectionEntity.companionPhone] = companionPhone
+                    }
+                    onSuccess()
+                } else {
+                    onFailure(Exception("Exception onFailure updateUserSessionCompanion userPhone is not already exists"))
+                }
+            }
+        } catch (e: Exception) {
+            onFailure(e)
+        }
+    }
+
+    override fun getUserSessionCompanion(
+        senderPhone: String,
+        companionPhone: String,
+        onSuccess: (Boolean) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        try {
+            transaction {
+
+                println(":::::::::::::::::getUserSessionCompanion senderPhone=" + senderPhone + " companionPhone=" + companionPhone)
+                println(":::::::::::::::::getUserSessionCompanion userSocketConnectionEntity.userPhone=" + userSocketConnectionEntity.userPhone + " companionPhone=" + companionPhone)
+
+
+                val userPhone = userSocketConnectionEntity.select { userSocketConnectionEntity.userPhone eq companionPhone }.any()
+                if (userPhone) {
+                    val row = userSocketConnectionEntity.select { userSocketConnectionEntity.userPhone eq companionPhone }.singleOrNull()
+                    row?.let {
+                        val alreadyExistsCompanionPhone = userSocketConnectionEntity.select {
+                            userSocketConnectionEntity.companionPhone eq senderPhone
+                        }.any()
+                        if (alreadyExistsCompanionPhone) {
+                            onSuccess(true)
+                        } else {
+                            onSuccess(false)
+                        }
+                    }
+                } else {
+                    onFailure(Exception("SenderPone does not exist"))
+                }
+            }
+        } catch (e: Exception) {
+            onFailure(e)
+        }
+    }
+
+    override fun getListOnlineOrOffline(
         listRecipient: List<String>,
         onSuccess: (List<OnlineUserState>) -> Unit,
         onFailure: (Exception) -> Unit
@@ -52,11 +113,12 @@ class UserSessionDataSourceRepositoryImpl(
             transaction {
                 val listOnlineUserState = listRecipient.mapNotNull { recipientPhone ->
                     val row =
-                        userSocketConnectionEntity.select { userSocketConnectionEntity.userPhone eq recipientPhone }.singleOrNull()
+                        userSocketConnectionEntity.select { userSocketConnectionEntity.userPhone eq recipientPhone }
+                            .singleOrNull()
                     row?.let {
                         OnlineUserState(
                             userPhone = row[userSocketConnectionEntity.userPhone],
-                            onlineOrDate = row[userSocketConnectionEntity.onlineOrDate]
+                            onlineOrOffline = row[userSocketConnectionEntity.onlineOrOffline]
                         )
                     }
                 }
@@ -74,10 +136,11 @@ class UserSessionDataSourceRepositoryImpl(
     ) {
         try {
             transaction {
-                val userSessionRow = userSocketConnectionEntity.select { userSocketConnectionEntity.userPhone eq userPhone }.single()
+                val userSessionRow =
+                    userSocketConnectionEntity.select { userSocketConnectionEntity.userPhone eq userPhone }.single()
                 val userSocketConnection = UserSocketConnection(
                     userPhone = userSessionRow[userSocketConnectionEntity.userPhone],
-                    onlineOrDate = userSessionRow[userSocketConnectionEntity.onlineOrDate]
+                    onlineOrOffline = userSessionRow[userSocketConnectionEntity.onlineOrOffline]
                 )
                 onSuccess(userSocketConnection)
             }
@@ -88,7 +151,7 @@ class UserSessionDataSourceRepositoryImpl(
 
     override fun insertUserSession(
         userPhone: String,
-        onlineOrDate: String,
+        onlineOrOffline: String,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
@@ -96,7 +159,7 @@ class UserSessionDataSourceRepositoryImpl(
             transaction {
                 userSocketConnectionEntity.insert {
                     it[userSocketConnectionEntity.userPhone] = userPhone
-                    it[userSocketConnectionEntity.onlineOrDate] = onlineOrDate
+                    it[userSocketConnectionEntity.onlineOrOffline] = onlineOrOffline
                 }
                 onSuccess()
             }

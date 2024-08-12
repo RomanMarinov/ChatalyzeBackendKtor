@@ -2,6 +2,7 @@ package ru.marinovdev.di
 
 import org.koin.dsl.module
 import ru.marinovdev.data.code.CodeDataSourceRepositoryImpl
+import ru.marinovdev.data.firebase.UserFirebaseRepositoryImpl
 import ru.marinovdev.data.messages.MessageDataSourceRepositoryImpl
 import ru.marinovdev.data.tokens.TokensDataSourceRepositoryImpl
 import ru.marinovdev.data.users.UsersDataSourceRepositoryImpl
@@ -15,4 +16,6 @@ val repositoryModule = module {
 
     single<MessageDataSourceRepository> { MessageDataSourceRepositoryImpl(get()) }
     single<UserSessionDataSourceRepository> { UserSessionDataSourceRepositoryImpl(get()) }
+
+    single<UserFirebaseRepository> { UserFirebaseRepositoryImpl(get()) }
 }

@@ -27,7 +27,6 @@ interface MessageDataSourceRepository {
     suspend fun getLastMessage(
         sender: String,
         recipient: String,
-        //onSuccess: (Message) -> Unit,
         onFailure: (Exception) -> Unit
     ) : Message?
 }

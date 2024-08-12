@@ -111,7 +111,6 @@ class UserCodeController(
                     )
                 }
             }
-            // удалить код из бд
             deleteCodeByUserIdToDb(userId = userId)
         } else {
             runBlocking {

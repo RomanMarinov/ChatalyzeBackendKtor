@@ -29,32 +29,7 @@ class SendEmailToTheUser {
                 println(":::::::::::try catch sendEmail onFailure e=" + e.localizedMessage)
                 onFailure(e)
             }
-
         }
-
-
-//        fun sendEmail(
-//            emailForSending: String,
-//            code: String,
-//            onSuccess: () -> Unit,
-//            onFailure: (Exception) -> Unit
-//        ) {
-//            val executorService = Executors.newSingleThreadExecutor()
-//            executorService.execute {
-//                try {
-//                    val message: Message = createEmailMessage(
-//                        emailForSending = emailForSending,
-//                        code = code
-//                    )
-//                    Transport.send(message)
-//                    onSuccess()
-//                } catch (e: Exception) {
-//                    println(":::::::::::try catch sendEmail onFailure e=" + e.localizedMessage)
-//                    onFailure(e)
-//                }
-//            }
-//            executorService.shutdown() // Завершение работы ExecutorService
-//        }
 
         @Throws(MessagingException::class)
         private fun createEmailMessage(

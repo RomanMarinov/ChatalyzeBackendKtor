@@ -12,26 +12,9 @@ object UserSocketManager {
         userSocket[userPhone] = member
     }
 
-    fun getUserSocket(userPhone: String) : WebSocketSession? {
-        if (userSocket[userPhone]?.socket == null) {
-            println("::::::::::getUserSocket socket == null ")
-        } else {
-            println("::::::::::getUserSocket socket != null ")
-        }
-
-        println("::::::::::")
-        return userSocket[userPhone]?.socket
-    }
-
     fun getAllUser() : List<Member> {
         return userSocket.values.toList()
     }
-
-    // еще вариант удаления
-//    fun deleteUser(userPhone: String) {
-//        userSocket.remove(userPhone)
-//        userSocket[userPhone]
-//    }
 
     fun removeMemberByUserPhone(userPhone: String) {
         // Ищем ключ, соответствующий заданному userPhone
@@ -43,6 +26,6 @@ object UserSocketManager {
     }
 
     fun checkContainsUser(userPhone: String) : Boolean {
-        return userSocket.contains(userPhone)
+        return userSocket.containsKey(userPhone)
     }
 }

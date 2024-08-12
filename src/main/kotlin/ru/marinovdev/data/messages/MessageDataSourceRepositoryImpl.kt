@@ -10,48 +10,9 @@ import ru.marinovdev.data.messages.model.Message
 import ru.marinovdev.data.messages.model.UserPairChat
 import ru.marinovdev.domain.repository.MessageDataSourceRepository
 
-
 class MessageDataSourceRepositoryImpl(
-    //private val db: CoroutineDatabase
-    private val messageEntity: MessageEntity // не удалять !!!!!
+    private val messageEntity: MessageEntity
 ) : MessageDataSourceRepository {
-
-    //private val messages = db.getCollection<Message>()
-//    override suspend fun getAllMessages(): List<Message> {
-//        return suspendCoroutine { continuation ->
-//            val userPairChat = UserPairChat(
-//                sender = "15551234567",
-//                recipient = "89203333333"
-//            )
-//            Messages.fetchMessagesByPairUsers(
-//                userPairChat = userPairChat,
-//                onSuccess = { messages ->
-//                    println(":::::::::::::::MessageDataSourceImpl getAllMessages onSuccess it=$messages")
-//                    continuation.resume(messages)
-//                },
-//                onFailure = { exception ->
-//                    println(":::::::::::::::MessageDataSourceImpl getAllMessages onFailure it=$exception")
-//                    continuation.resume(emptyList()) // обработка ошибки, если требуется
-//                }
-//            )
-//        }
-//    }
-    // тут я передам параметры для возврата определенных сообщений
-//    override suspend fun getAllMessages(userPairChat: UserPairChat): List<Message> {
-//        lateinit var messages: List<Message>
-//
-//        MessageEntity.fetchMessagesByPairUsers(
-//            userPairChat = userPairChat,
-//            onSuccess = {
-//                println(":::::::::::::::MessageDataSourceImpl getAllMessages onSuccess it=" + it)
-//                messages = it
-//            },
-//            onFailure = {
-//                println(":::::::::::::::MessageDataSourceImpl getAllMessages onFailure it=" + it)
-//            }
-//        )
-//        return messages
-//    }
 
     override suspend fun getAllMessages(
         userPairChat: UserPairChat,
@@ -78,8 +39,6 @@ class MessageDataSourceRepositoryImpl(
         } catch (e: Exception) {
             onFailure(e)
         }
-
-
     }
 
     override suspend fun insertMessage(message: Message) {
@@ -94,25 +53,6 @@ class MessageDataSourceRepositoryImpl(
             }
         )
     }
-
-//    override suspend fun getChats(sender: String, onSuccess: (List<Chat>) -> Unit, onFailure: (Exception) -> Unit) {
-//        TODO("Not yet implemented")
-//    }
-
-//    override suspend fun getChats(sender: String){
-//        lateinit var chats: List<Chat>
-//        MessageEntity.fetchChat(
-//            receivedSender = sender,
-//            onSuccess = {
-//                println(":::::::::::::::MessageDataSourceImpl getChats onSuccess it=" + it)
-//                chats = it
-//            },
-//            onFailure = {
-//                println(":::::::::::::::MessageDataSourceImpl getChats onFailure")
-//            }
-//        )
-//        return chats
-//    }
 
     override suspend fun getChats(
         receivedSender: String,
@@ -136,16 +76,12 @@ class MessageDataSourceRepositoryImpl(
                             created_at = it[MessageEntity.createdAt].toString()
                         )
 
-                        // Если это сообщение от receivedSender
                         if (sender == receivedSender) {
                             // Если ранее не было сообщений с этим получателем или если это сообщение более новое
                             if (recipient !in results || chatDTO.created_at > results[recipient]?.created_at.toString()) {
                                 results[recipient] = chatDTO
                             }
-                        }
-
-                        // Если это сообщение для receivedSender
-                        else if (recipient == receivedSender) {
+                        } else if (recipient == receivedSender) {
                             // Если ранее не было сообщений от этого отправителя или если это сообщение более новое
                             if (sender !in results || chatDTO.created_at > results[sender]?.created_at.toString()) {
                                 results[sender] = chatDTO
@@ -189,9 +125,8 @@ class MessageDataSourceRepositoryImpl(
     override suspend fun getLastMessage(
         sender: String,
         recipient: String,
-       // onSuccess: (Message) -> Unit,
         onFailure: (Exception) -> Unit
-    ) : Message? {
+    ): Message? {
         return try {
             transaction {
                 val lastMessage = messageEntity

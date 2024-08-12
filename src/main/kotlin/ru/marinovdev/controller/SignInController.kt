@@ -2,6 +2,7 @@ package ru.marinovdev.controller
 
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.config.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import kotlinx.coroutines.runBlocking
@@ -14,7 +15,6 @@ import ru.marinovdev.domain.model.sign_in.SignInResponseRemote
 import ru.marinovdev.domain.repository.TokensDataSourceRepository
 import ru.marinovdev.domain.repository.UsersDataSourceRepository
 import ru.marinovdev.features.auth_lackner.security.hashing_password.HashingService
-import ru.marinovdev.features.auth_lackner.security.hashing_password.SaltedHash
 import ru.marinovdev.features.auth_lackner.security.token.JwtTokenService
 import ru.marinovdev.features.auth_lackner.security.token.TokenClaim
 import ru.marinovdev.features.jwt_token.TokenConfig
@@ -28,16 +28,20 @@ class SignInController(
     private val usersDataSourceRepository: UsersDataSourceRepository,
     private val tokensDataSourceRepository: TokensDataSourceRepository
 ) {
-    suspend fun performSignIn(call: ApplicationCall) {
+    suspend fun performSignIn(call: ApplicationCall, hoconApplicationConfig: HoconApplicationConfig) {
         val receive = call.receive<SignInReceiveRemote>() // получаем логин от клиента
-        println("SignInController receive=" + receive)
 
         usersDataSourceRepository.fetchUserByEmail(
             receivedEmail = receive.email,
             onSuccess = { userDto ->
                 if (userDto != null) {
                     println("::::::::::: onSuccess userDto=" + userDto)
-                    if (checkToCompareTwoHashes(userDto = userDto, receive = receive)) {
+                    if (checkToCompareTwoHashes(
+                            userDto = userDto,
+                            receive = receive,
+                            hoconApplicationConfig = hoconApplicationConfig
+                        )
+                    ) {
                         findUserIdByEmail(emailFromDb = userDto.email, call = call)
                     } else {
                         runBlocking {
@@ -51,7 +55,6 @@ class SignInController(
                         }
                     }
                 } else {
-                    println("::::::::::: onSuccess userDto=" + userDto)
                     runBlocking {
                         call.respond(
                             MessageResponse(
@@ -76,14 +79,16 @@ class SignInController(
         )
     }
 
-    private fun checkToCompareTwoHashes(userDto: UserDTO, receive: SignInReceiveRemote): Boolean {
+    private fun checkToCompareTwoHashes(
+        userDto: UserDTO,
+        receive: SignInReceiveRemote,
+        hoconApplicationConfig: HoconApplicationConfig
+    ): Boolean {
         // используем функицю проверки для сравнения хешей
         return hashingService.verify(
             password = receive.password, // пароль запроса
-            saltedHash = SaltedHash( // новый экз который создаем и это хешированное значение из бд
-                hashPasswordSalt = userDto.password,
-                salt = userDto.salt
-            )
+            passwordHex = userDto.password,
+            hoconApplicationConfig = hoconApplicationConfig,
         )
     }
 
@@ -138,20 +143,19 @@ class SignInController(
                 userIdValue = userIdFromDb
             )
         )
-
         // удалить рефреш токен сначала
-        deleteRefreshTokenByUserId(userId = userIdFromDb, refreshToken = refreshToken, call = call)
+        deleteAndInsertRefreshTokenByUserId(userId = userIdFromDb, refreshToken = refreshToken, call = call)
     }
 
-    private fun deleteRefreshTokenByUserId(userId: Int, refreshToken: String, call: ApplicationCall) {
+    private fun deleteAndInsertRefreshTokenByUserId(userId: Int, refreshToken: String, call: ApplicationCall) {
         tokensDataSourceRepository.deleteRefreshTokenByUserId(
             userId = userId,
             onSuccess = {
                 tokensDataSourceRepository.insertRefreshToken(
                     TokenDTO(
-                    userId = userId,
-                    refreshToken = refreshToken
-                ),
+                        userId = userId,
+                        refreshToken = refreshToken
+                    ),
                     onSuccess = {
                         println("::::::::::: onSuccess insertRefreshToken")
                         fetchRefreshTokenByUserId(userId = userId, call = call)
@@ -187,7 +191,7 @@ class SignInController(
             onSuccess = { refreshToken ->
                 if (refreshToken != null) {
                     val accessToken = generateAccessToken(userIdFromDb = userId, tokenConfig = tokenConfig)
-                    sendingTokenToClient(accessToken = accessToken, refreshToken = refreshToken, call = call)
+                    sendingTokensToClient(accessToken = accessToken, refreshToken = refreshToken, call = call)
                 } else {
                     runBlocking {
                         call.respond(
@@ -211,9 +215,7 @@ class SignInController(
             })
     }
 
-    private fun sendingTokenToClient(accessToken: String, refreshToken: String, call: ApplicationCall) {
-        println(":::::::::::sendingTokenToClient accessToken=" + accessToken)
-        println(":::::::::::sendingTokenToClient refreshToken=" + refreshToken)
+    private fun sendingTokensToClient(accessToken: String, refreshToken: String, call: ApplicationCall) {
         runBlocking {
             val signInResponseRemoteJson = Json.encodeToString(
                 SignInResponseRemote(

@@ -8,6 +8,8 @@ val controllerModule = module {
 
     single { SignInController(get(), get(), get(), get(), get()) }
 
+    single { UpdateTokensController(get(), get(), get()) }
+
     single { LogoutController(get()) }
 
     single { DeleteProfileController(get(), get(), get()) }
@@ -16,10 +18,9 @@ val controllerModule = module {
     single { UserEmailController(get(), get(), get()) }
     single { UserPasswordController(get(), get()) }
 
-/////////////
-//    single<MessageDataSourceRepository> {
-//        MessageDataSourceRepositoryImpl()
-//    }
-    single { SocketMessageController(get()) }
+    single { SocketMessageController(get(), get(), get()) }
     single { SocketStateUserController(get(), get()) }
+
+    single { FirebaseRegisterController(get()) }
+    single { FirebaseCommandController(get()) }
 }

@@ -2,6 +2,7 @@ package ru.marinovdev.controller
 
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.config.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import kotlinx.coroutines.runBlocking
@@ -9,7 +10,6 @@ import ru.marinovdev.data.users.dto.UserDTO
 import ru.marinovdev.domain.model.register.RegisterReceiveRemote
 import ru.marinovdev.domain.repository.UsersDataSourceRepository
 import ru.marinovdev.features.auth_lackner.security.hashing_password.HashingService
-import ru.marinovdev.features.auth_lackner.security.hashing_password.SaltedHash
 import ru.marinovdev.model.MessageResponse
 import ru.marinovdev.utils.StringResource
 
@@ -17,7 +17,7 @@ class RegisterController(
     private val hashingService: HashingService,
     private val usersDataSourceRepository: UsersDataSourceRepository
 ) {
-    suspend fun registerUser(call: ApplicationCall) {
+    suspend fun registerUser(call: ApplicationCall, hoconApplicationConfig: HoconApplicationConfig) {
         try {
             val registerReceiveRemote = call.receive<RegisterReceiveRemote>() // получаем email от клиента
             usersDataSourceRepository.checkEmailExists(
@@ -39,17 +39,18 @@ class RegisterController(
                         insertUserIntoDatabase(
                             registerReceiveRemote = registerReceiveRemote,
                             hashingService = hashingService,
-                            call = call
+                            call = call,
+                            hoconApplicationConfig = hoconApplicationConfig
                         )
                     }
                 },
-                onFailure = {
-                    println(":::::::::::registerNewUser onFailure isEmailExists")
+                onFailure = { e ->
+                    println(":::::::::::registerNewUser onFailure isEmailExists e=" + e.localizedMessage)
                     runBlocking {
                         call.respond(
                             MessageResponse(
                                 httpStatusCode = HttpStatusCode.InternalServerError.value,
-                                message = StringResource.CHECK_EMAIL_EXISTS_ERROR
+                                message = StringResource.CHECK_EMAIL_EXISTS_ERROR + e.localizedMessage
                             )
                         )
                     }
@@ -71,21 +72,20 @@ class RegisterController(
     private fun insertUserIntoDatabase(
         registerReceiveRemote: RegisterReceiveRemote,
         hashingService: HashingService,
-        call: ApplicationCall
+        call: ApplicationCall,
+        hoconApplicationConfig: HoconApplicationConfig
     ) {
 
-        // сгенерировать отсортировнный хеш и пароль пользователя
-        val saltHash: SaltedHash = hashingService.generateSaltHash(password = registerReceiveRemote.password)
-        //     println(":::::::::::insertUserIntoDatabase saltHash.hash=" + saltHash.hash)
-        //     println(":::::::::::insertUserIntoDatabase saltHash.salt=" + saltHash.salt)
-// :::::::::::insertUserIntoDatabase saltHash.hash=13a0008b4f0a27223aed720b85430f6a27cd8ffe1995239628c78b98e2dc2d8c
-// :::::::::::insertUserIntoDatabase saltHash.salt=d65be3bdaf3a9207ea83301de02c13573872162b9e31816b3b5bd84b93e4a77d
+        val passwordHex: String = hashingService.generatePasswordHex(
+            password = registerReceiveRemote.password,
+            hoconApplicationConfig = hoconApplicationConfig
+        )
 
         usersDataSourceRepository.insertUser(
             userDTO = UserDTO(
                 email = registerReceiveRemote.email,
-                password = saltHash.hashPasswordSalt,
-                salt = saltHash.salt,
+                password = passwordHex,
+                //salt = saltHash.salt,
             ),
             onSuccess = {
                 println(":::::::::::insertUserIntoDatabase onSuccess")

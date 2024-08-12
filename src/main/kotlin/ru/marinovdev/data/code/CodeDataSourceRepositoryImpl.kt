@@ -45,11 +45,7 @@ class CodeDataSourceRepositoryImpl(private val codeEntity: CodeEntity) : CodeDat
         try {
             codeEntity.deleteWhere { userId eq receiveUserId }
             onSuccess()
-        }
-//        catch (e: NoSuchElementException) {
-//            onSuccess(null)
-//        }
-        catch (e: Exception) {
+        } catch (e: Exception) {
             onFailure(e)
         }
     }

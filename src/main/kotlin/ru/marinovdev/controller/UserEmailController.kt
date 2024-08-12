@@ -25,7 +25,6 @@ class UserEmailController(
     suspend fun fetchAndSend(call: ApplicationCall) {
         try {
             val receivedEmail = call.receive<UserEmailRemote>() // type data class
-            println(":::::::::::Пришло от клиента при отправке от него почты если он забыл пароль =${receivedEmail.email}")
             findUserIdByEmail(email = receivedEmail.email, call = call)
         } catch (e: Exception) {
             println(":::::::::::try catch fetchAndSend e=$e")
@@ -108,28 +107,10 @@ class UserEmailController(
             hashCodeSalt = saltedHashCode.hashCodeSalt,
             salt = saltedHashCode.salt
         )
-        println(":::::::::::codeDTO=" + codeDTO)
-// :codeDTO=CodeDTO(
-// userId=3,
-// timeOfCreation=1697573106004,
-// hashCodeSalt=caeafe8a6e4f3491679076330713584fe18c7f382c9e91d1e20684232e3b311e,
-// salt=7b855b15681c9f0214f6cf8990b0764afd5ede613482c1d6481c4f1943a2f217)
         codeDataSourceRepository.insertCodeToDb(
             codeDTO,
             onSuccess = {
                 println(":::::::::::insertCodeToDb onSuccess")
-
-//                runBlocking {
-//                    println(":::::::::::sendPasswordByEmail sendEmail onSuccess")
-//                    call.respond(
-//                        MessageResponse(
-//                            httpStatusCode = HttpStatusCode.OK.value,
-//                            message = "The letter was successfully sent to ! " +
-//                                    "\nWe also recommend checking your SPAM address"
-//                        )
-//                    )
-//                }
-
                  sendCodeByEmail(code = code, email = email, call = call)
             },
             onFailure = { e ->
@@ -147,9 +128,6 @@ class UserEmailController(
     }
 
     private fun sendCodeByEmail(code: String, email: String, call: ApplicationCall) {
-        //val email = "marinov37@mail.ru"
-        //val password = "123qweRT"
-
         SendEmailToTheUser.sendEmail(
             emailForSending = email,
             code = code,

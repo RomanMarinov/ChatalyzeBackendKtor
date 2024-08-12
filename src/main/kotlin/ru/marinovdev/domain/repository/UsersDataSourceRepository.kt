@@ -9,10 +9,9 @@ interface UsersDataSourceRepository {
     fun fetchUserByUserId(id: Int, onSuccess: (UserDTO?) -> Unit, onFailure: (Exception) -> Unit)
     fun deleteUserByUserId(id: Int, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
     fun checkEmailExists(emailFromDb: String, onSuccess: (Boolean) -> Unit, onFailure: (Exception) -> Unit)
-    fun updatePasswordAndSalt(
+    fun updatePasswordHex(
         emailReceived: String,
         passwordGenerated: String,
-        saltGenerated: String,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     )

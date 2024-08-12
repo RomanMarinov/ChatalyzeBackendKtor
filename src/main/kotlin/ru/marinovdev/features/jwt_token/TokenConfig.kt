@@ -4,10 +4,6 @@ import ru.marinovdev.features.auth_lackner.security.token.AccessTokenConfig
 import ru.marinovdev.features.auth_lackner.security.token.RefreshTokenConfig
 
 class TokenConfig {
-//    private val issuer = HoconApplicationConfig(ConfigFactory.load()).property("jwt.issuer").getString()
-//    private val audience = HoconApplicationConfig(ConfigFactory.load()).property("jwt.audience").getString()
-//    private val secret = HoconApplicationConfig(ConfigFactory.load()).property("jwt.secret").getString()
-
     fun getAccessTokenConfig(): AccessTokenConfig {
         return AccessTokenConfig(
             issuer = JwtConfig.getIssuer(),

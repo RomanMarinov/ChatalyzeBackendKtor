@@ -16,21 +16,15 @@ import ru.marinovdev.utils.StringResource
 class DeleteProfileController(
     private val jwtTokenService: JwtTokenService,
     private val usersDataSourceRepository: UsersDataSourceRepository,
-    private val tokensDataSourceRepository: TokensDataSourceRepository) {
-
+    private val tokensDataSourceRepository: TokensDataSourceRepository
+) {
     suspend fun delete(call: ApplicationCall) {
         val receive = call.receive<DeleteProfileReceiveRemote>()
-        println("::::::::::::::::::DeleteProfileController delete receive refreshToken=" + receive.refreshToken)
 
-        val tokenPayload: TokenPayload = jwtTokenService.decodeRefreshToken(receive.refreshToken)
+        val tokenPayload: TokenPayload = jwtTokenService.decodeToken(token = receive.refreshToken)
 
         val userId = tokenPayload.userId
         val expiresIn = tokenPayload.expiresIn
-
-        println("::::::::::::::::::DeleteProfileController userId=" + userId)
-        println("::::::::::::::::::DeleteProfileController expiresIn=" + expiresIn)
-
-        // по userId удалить строку из users и строку token
 
         userId?.let {
             usersDataSourceRepository.fetchUserByUserId(
@@ -61,6 +55,15 @@ class DeleteProfileController(
                     }
                 }
             )
+        } ?: run {
+            runBlocking {
+                call.respond(
+                    MessageResponse(
+                        httpStatusCode = HttpStatusCode.NotFound.value,
+                        message = StringResource.USER_ID_NOT_FOUND
+                    )
+                )
+            }
         }
     }
 
@@ -129,6 +132,7 @@ class DeleteProfileController(
                         )
                     )
                 }
-            })
+            }
+        )
     }
 }

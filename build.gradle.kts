@@ -29,8 +29,19 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
     implementation("io.ktor:ktor-server-cio-jvm")
     implementation("io.ktor:ktor-server-netty:$ktor_version")
-    // преобразовывать объекты в формат JSON и обратно
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
+    implementation("io.ktor:ktor-serialization-jackson:$ktor_version")
+    // websocket
+    implementation("io.ktor:ktor-server-websockets-jvm:$ktor_version")
+    // sessions
+    implementation("io.ktor:ktor-server-sessions:$ktor_version")
+    // auth jwt
+    implementation("io.ktor:ktor-server-auth-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-auth-jwt-jvm:$ktor_version")
+
+    implementation("io.ktor:ktor-server-auth:$ktor_version")
+    implementation("io.ktor:ktor-server-auth-jwt:$ktor_version")
+
     implementation ("com.google.code.gson:gson:2.8.8")
 
     // dependencies for postgres
@@ -47,33 +58,25 @@ dependencies {
     implementation("javax.mail:javax.mail-api:1.6.2")
     implementation("com.sun.mail:javax.mail:1.6.2")
 
-    // auth jwt
-    implementation("io.ktor:ktor-server-auth-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-auth-jwt-jvm:$ktor_version")
-//    implementation("io.ktor:ktor-auth:$ktor_version")
-//    implementation("io.ktor:ktor-auth-jwt:$ktor_version")
-//    implementation("io.ktor:jwt:$ktor_version")
-//
-//    implementation("com.auth0:java-jwt:3.18.1")
-
     implementation("commons-codec:commons-codec:1.16.0")
 
     // coroutine
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
 
-    // websocket
-    implementation("io.ktor:ktor-server-websockets-jvm:$ktor_version")
-
-    // sessions
-    implementation("io.ktor:ktor-server-sessions:$ktor_version")
-
     // Koin
     implementation("io.insert-koin:koin-core:$koin_version")
     implementation("io.insert-koin:koin-logger-slf4j:$koin_version")
-    //   implementation("io.insert-koin:koin-core-jvm:$koin_version")
-    // implementation("io.insert-koin:koin-ktor:3.2.0")
 
     implementation("io.insert-koin:koin-ktor:$koin_version")
 
     implementation("org.jetbrains.exposed:exposed-java-time:0.30.1")
+
+    // Firebase
+    implementation("com.google.firebase:firebase-admin:9.1.1")
+    // Logging
+    implementation("org.slf4j:slf4j-simple:2.0.5")
+
+    implementation("io.jsonwebtoken:jjwt-api:0.12.5")
+    implementation("io.jsonwebtoken:jjwt-impl:0.12.5")
+    implementation("io.jsonwebtoken:jjwt-jackson:0.12.5")
 }

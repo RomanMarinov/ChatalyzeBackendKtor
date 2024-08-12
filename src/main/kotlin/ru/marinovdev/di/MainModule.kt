@@ -3,6 +3,7 @@ package ru.marinovdev.di
 import io.ktor.server.application.*
 import org.koin.dsl.module
 import ru.marinovdev.data.code.CodeEntity
+import ru.marinovdev.data.firebase.FirebaseRegisterEntity
 import ru.marinovdev.data.messages.MessageEntity
 import ru.marinovdev.data.tokens.TokensEntity
 import ru.marinovdev.data.users.UsersEntity
@@ -27,9 +28,10 @@ val mainModule = module {
     single { CodeEntity }
 
     single { TokenConfig() }
-    //single { JwtConfig() }
 
     single { MessageEntity }
     single { UserSocketConnectionEntity }
+
+    single { FirebaseRegisterEntity }
 
 }

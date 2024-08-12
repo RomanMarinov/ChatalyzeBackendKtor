@@ -15,4 +15,12 @@ object JwtConfig {
     fun getSecret(): String {
         return HoconApplicationConfig(ConfigFactory.load()).property("jwt.secret").getString()
     }
+
+    fun getRealm(): String {
+        return HoconApplicationConfig(ConfigFactory.load()).property("jwt.realm").getString()
+    }
+
+    fun getSalt(): String {
+        return HoconApplicationConfig(ConfigFactory.load()).property("jwt.salt").getString()
+    }
 }
