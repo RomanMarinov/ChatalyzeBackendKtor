@@ -36,4 +36,4 @@ out/
 .vscode/
 
 docker-compose.yml
-/src/main/resources/firebaseservice.json
+/src/main/resources/firebaseservice.jsonsrc/main/resources/firebaseservice.json
